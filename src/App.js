@@ -1,22 +1,26 @@
 // Import React dependencies.
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 // Import the Slate editor factory.
-import { Transforms, createEditor, Editor, Element } from "slate";
+import { createEditor } from "slate";
 
 // Import the Slate components and React plugin.
 import { Slate, Editable, withReact } from "slate-react";
 
 import CustomEditor from "./components/CustomEditor";
 
-const initialValue = [
-  {
-    type: "paragraph",
-    children: [{ text: "A line of text in a paragraph." }],
-  },
-];
-
 const App = () => {
   const [editor] = useState(() => withReact(createEditor()));
+
+  const initialValue = useMemo(() => {
+    return (
+      JSON.parse(localStorage.getItem("content")) || [
+        {
+          type: "paragraph",
+          children: [{ text: "A line of text in a paragraph." }],
+        },
+      ]
+    );
+  }, []);
 
   const renderElement = useCallback((props) => {
     switch (props.element.type) {
@@ -32,7 +36,20 @@ const App = () => {
   }, []);
 
   return (
-    <Slate editor={editor} initialValue={initialValue}>
+    <Slate
+      editor={editor}
+      initialValue={initialValue}
+      onChange={(value) => {
+        console.log(value);
+        const isAstChange = editor.operations.some(
+          (op) => op.type !== "set_selection"
+        );
+        if (isAstChange) {
+          const content = JSON.stringify(value);
+          localStorage.setItem("content", content);
+        }
+      }}
+    >
       <div>
         <button
           onMouseDown={(e) => {
