@@ -25,29 +25,59 @@ const App = () => {
     }
   }, []);
 
+  const renderLeaf = useCallback((props) => {
+    return <Leaf {...props} />;
+  }, []);
+
   return (
     <Slate editor={editor} initialValue={initialValue}>
       <Editable
         renderElement={renderElement}
+        renderLeaf={renderLeaf}
         onKeyDown={(e) => {
-          if (e.key === "`" && e.ctrlKey) {
-            e.preventDefault();
+          if (!e.ctrlKey) {
+            return;
+          }
 
-            const [match] = Editor.nodes(editor, {
-              match: (n) => n.type === "code",
-            });
+          switch (e.key) {
+            case "`":
+              e.preventDefault();
 
-            Transforms.setNodes(
-              editor,
-              { type: match ? "paragraph" : "code" },
-              {
-                match: (n) => Element.isElement(n) && Editor.isBlock(editor, n),
-              }
-            );
+              const [match] = Editor.nodes(editor, {
+                match: (n) => n.type === "code",
+              });
+
+              Transforms.setNodes(
+                editor,
+                { type: match ? "paragraph" : "code" },
+                {
+                  match: (n) =>
+                    Element.isElement(n) && Editor.isBlock(editor, n),
+                }
+              );
+              break;
+            case "b": {
+              e.preventDefault();
+              Editor.addMark(editor, "bold", true);
+              break;
+            }
+            default:
+              break;
           }
         }}
       />
     </Slate>
+  );
+};
+
+const Leaf = (props) => {
+  return (
+    <span
+      {...props.attributes}
+      style={{ fontWeight: props.leaf.bold ? "bold" : "normal" }}
+    >
+      {props.children}
+    </span>
   );
 };
 
