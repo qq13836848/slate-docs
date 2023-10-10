@@ -18,7 +18,14 @@ const App = () => {
   return (
     // Add the editable component inside the context.
     <Slate editor={editor} initialValue={initialValue}>
-      <Editable />
+      <Editable
+        onKeyDown={(e) => {
+          if (e.key === "&") {
+            e.preventDefault();
+            editor.insertText(" and ");
+          }
+        }}
+      />
     </Slate>
   );
 };
