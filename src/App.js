@@ -6,6 +6,8 @@ import { Transforms, createEditor, Editor, Element } from "slate";
 // Import the Slate components and React plugin.
 import { Slate, Editable, withReact } from "slate-react";
 
+import CustomEditor from "./components/CustomEditor";
+
 const initialValue = [
   {
     type: "paragraph",
@@ -31,6 +33,24 @@ const App = () => {
 
   return (
     <Slate editor={editor} initialValue={initialValue}>
+      <div>
+        <button
+          onMouseDown={(e) => {
+            e.preventDefault();
+            CustomEditor.toggleBoldMrk(editor);
+          }}
+        >
+          Bold
+        </button>
+        <button
+          onMouseDown={(e) => {
+            e.preventDefault();
+            CustomEditor.toggleCodeBlock(editor);
+          }}
+        >
+          Code Block
+        </button>
+      </div>
       <Editable
         renderElement={renderElement}
         renderLeaf={renderLeaf}
@@ -42,23 +62,11 @@ const App = () => {
           switch (e.key) {
             case "`":
               e.preventDefault();
-
-              const [match] = Editor.nodes(editor, {
-                match: (n) => n.type === "code",
-              });
-
-              Transforms.setNodes(
-                editor,
-                { type: match ? "paragraph" : "code" },
-                {
-                  match: (n) =>
-                    Element.isElement(n) && Editor.isBlock(editor, n),
-                }
-              );
+              CustomEditor.toggleCodeBlock(editor);
               break;
             case "b": {
               e.preventDefault();
-              Editor.addMark(editor, "bold", true);
+              CustomEditor.toggleBoldMrk(editor);
               break;
             }
             default:
